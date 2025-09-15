@@ -138,7 +138,7 @@
     </div>
   </div>
   
-  <div id="session-overlay" class="overlay">
+  <div id="session-overlay" class="overlay hidden">
     <div class="overlay-card">
       <h3>Join a Session</h3>
       <input type="text" id="session-input" class="content-input" placeholder="ENTER SESSION ID">
@@ -281,16 +281,18 @@
     
     startBtn.addEventListener('click', () => {
         const newSessionId = Math.floor(100000 + Math.random() * 900000).toString();
-        const newUrl = `${window.location.pathname}?session=${newSessionId}`;
-        window.location.href = newUrl;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('session', newSessionId);
+        window.location.href = currentUrl.href;
     });
 
     joinBtn.addEventListener('click', () => {
         const sessionInput = document.getElementById('session-input');
         const inputId = sessionInput.value.trim();
         if (inputId) {
-            const newUrl = `${window.location.pathname}?session=${inputId}`;
-            window.location.href = newUrl;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('session', inputId);
+            window.location.href = currentUrl.href;
         }
     });
 
