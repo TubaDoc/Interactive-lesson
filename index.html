@@ -8,6 +8,7 @@
   :root{--bg:#0e0f12;--ink:#e8ebf0;--muted:#b6bdc9;--card:#161821;--line:#262a35;--brand:#59d0ff;--accent:#ffd166}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Segoe UI',system-ui,Roboto,sans-serif}
   body.modal-open{overflow:hidden}
+  header.top, #main-content{display: none;}
   .app{max-width:980px;margin:0 auto;padding:1rem}
 
   .slide{display:none;background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:1rem;margin:1rem 0}
@@ -195,8 +196,7 @@
   let sessionDataPath = null;
   let ix = 0; 
   let slidesEls;
-  let isAuthReady = false;
-
+  
   // --- LESSON CONTENT ---
   const SLIDES = [
     {"id": "17.01", "title": "17.01 Introduction", "bullets": ["Bluegrass emerged as a country subgenre in the 1940s.", "Bill Monroe is considered the 'father of bluegrass.'", "His band, the Blue Grass Boys, launched the careers of Lester Flatt and Earl Scruggs.", "The 1960s folk revival and Hollywood films introduced bluegrass to a new generation."], "full": "In an earlier lesson, we encountered a number of subgenres of country and western music that became popular during the 1940s, such as the country crooner and honky-tonk. In this lesson, we will focus specifically on the genre of bluegrass. Bill Monroe is generally considered to be the father of bluegrass. His band started the careers of two other crucial figures in bluegrass music, Lester Flatt and Earl Scruggs. Bluegrass music had had devoted followers since its earliest days in the 1940s, but during the 1960s, more and more people came to listen to and appreciate the music. The folk revival movement, coupled with mainstream exposure in Hollywood films, introduced a new generation of listeners to bluegrass.", "deep": [
@@ -246,7 +246,6 @@
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         userId = user.uid;
-        isAuthReady = true;
         console.log("Firebase Authenticated. User ID:", userId);
         handleSessionAndNameEntry();
     } else {
@@ -267,8 +266,8 @@
   }
   
   function showApp(){
-      document.getElementById('main-header').classList.add('active');
-      document.getElementById('main-content').classList.add('active');
+      document.getElementById('main-header').style.display = 'block';
+      document.getElementById('main-content').style.display = 'block';
   }
 
   // --- USER SESSION ---
@@ -315,8 +314,6 @@
   }
   
    function handleSessionAndNameEntry() {
-    if (!isAuthReady) return; 
-
     const sessionOverlay = document.getElementById('session-overlay');
     const nameOverlay = document.getElementById('name-entry-overlay');
 
@@ -661,7 +658,7 @@ function startApp() {
                 <h3>Final Thoughts?</h3>
                 <p>What one word describes Bluegrass to you? Add it to our word cloud!</p>
                 <div class="content-input-container">
-                    <input type="text" id="word-cloud-input" class="content.input" placeholder="e.g., Fast, Twangy, etc.">
+                    <input type="text" id="word-cloud-input" class="content-input" placeholder="e.g., Fast, Twangy, etc.">
                     <button class="add-content-btn" onclick="submitWord()">Submit</button>
                 </div>
             </div>
