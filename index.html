@@ -8,7 +8,7 @@
   :root{--bg:#0e0f12;--ink:#e8ebf0;--muted:#b6bdc9;--card:#161821;--line:#262a35;--brand:#59d0ff;--accent:#ffd166}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 'Segoe UI',system-ui,Roboto,sans-serif}
   body.modal-open{overflow:hidden}
-  header.top, #main-content{display: none;}
+  /* Show content by default, overlays will cover it */
   .app{max-width:980px;margin:0 auto;padding:1rem}
 
   .slide{display:none;background:var(--card);border:1px solid var(--line);border-radius:.6rem;padding:1rem;margin:1rem 0}
@@ -137,7 +137,7 @@
     </div>
   </div>
   
-  <div id="session-overlay" class="overlay hidden">
+  <div id="session-overlay" class="overlay">
     <div class="overlay-card">
       <h3>Join a Session</h3>
       <input type="text" id="session-input" class="content-input" placeholder="ENTER SESSION ID">
@@ -247,7 +247,7 @@
     if (user) {
         userId = user.uid;
         console.log("Firebase Authenticated. User ID:", userId);
-        handleSessionAndNameEntry();
+        checkSessionState();
     } else {
         try {
             if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); }
@@ -266,22 +266,16 @@
   }
   
   function showApp(){
+      document.getElementById('session-overlay').classList.add('hidden');
+      document.getElementById('name-entry-overlay').classList.add('hidden');
       document.getElementById('main-header').style.display = 'block';
       document.getElementById('main-content').style.display = 'block';
   }
 
   // --- USER SESSION ---
    function initializeUserSession() {
-    const sessionOverlay = document.getElementById('session-overlay');
     const startBtn = document.getElementById('start-session-btn');
     const joinBtn = document.getElementById('join-session-btn');
-    const sessionInput = document.getElementById('session-input');
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlSession = urlParams.get('session');
-    if (urlSession) {
-        sessionInput.value = urlSession;
-    }
     
     startBtn.addEventListener('click', () => {
         const newSessionId = Math.floor(100000 + Math.random() * 900000).toString();
@@ -290,6 +284,7 @@
     });
 
     joinBtn.addEventListener('click', () => {
+        const sessionInput = document.getElementById('session-input');
         const inputId = sessionInput.value.trim();
         if (inputId) {
             const newUrl = `${window.location.pathname}?session=${inputId}`;
@@ -313,7 +308,7 @@
     anonBtn.addEventListener('click', (e) => { e.preventDefault(); joinWithName(`Student${Math.floor(1000 + Math.random() * 9000)}`); });
   }
   
-   function handleSessionAndNameEntry() {
+   function checkSessionState() {
     const sessionOverlay = document.getElementById('session-overlay');
     const nameOverlay = document.getElementById('name-entry-overlay');
 
