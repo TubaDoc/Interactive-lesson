@@ -177,7 +177,6 @@
 
 <script type="module">
   // --- IMPORTS AND CONFIG ---
-  // UPDATED CONFIG: Replaced placeholders with your provided Firebase configuration.
   const firebaseConfig = {
     apiKey: "AIzaSyDxpDj0axohHIFfRQ53NLWBQbf_yI2lJo0",
     authDomain: "interactive-lecture-app.firebaseapp.com",
@@ -610,14 +609,59 @@ function startApp() {
   }
   
   // --- RENDERING & DOM MANIPULATION ---
+  
+  // --- NEW FUNCTION & MODIFIED FUNCTION START ---
+
+  // New function to toggle inline content.
+  function toggleProfile(elementId) {
+    const el = document.getElementById(elementId);
+    if (el) el.hidden = !el.hidden;
+  }
+
+  // Modified function to create inline content instead of a modal button.
   function deepListHTML(sectionIdx, deep){
     if(!deep || !deep.length) return '';
     const items = deep.map((d,di)=>{
-      const label = `Open profile: ${d.title}`;
-      return `<li class="deep-item"><button type="button" class="profile-btn" aria-label="${label}" onclick="openProfile(${sectionIdx},${di})">${d.title}</button></li>`;
+      // If the item has modalHTML but no bullets, it's likely a special case like the video.
+      // We'll keep the original modal behavior for those.
+      if (d.modalHTML && !d.bullets?.length) {
+         const label = `Open content: ${d.title}`;
+         return `<li class="deep-item"><button type="button" class="profile-btn" aria-label="${label}" onclick="openProfile(${sectionIdx},${di})">${d.title}</button></li>`;
+      }
+
+      const contentId = `profile-content-${sectionIdx}-${di}`;
+      
+      // Re-create the detailed content HTML, similar to how the modal did.
+      const baseBullets = (d.bullets||[]).map(b=>`<li>${b}</li>`).join('');
+      const media = (d.media||[]).map(m=>`<li><a href="${m.href}" target="_blank" rel="noopener">${m.label}</a></li>`).join('');
+      const extended = d.modalHTML || '';
+      const summaryHTML = d.summary?`<p>${d.summary}</p>`:'';
+      const bulletsHTML = baseBullets?`<h4>Key points</h4><ul>${baseBullets}</ul>`:'';
+      const mediaHTML = media?`<h4>Media</h4><ul class="media">${media}</ul>`:'';
+      
+      let fullContentHTML = '';
+      if (d.image) {
+          fullContentHTML = `
+              <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; text-align: left;">
+                  <div style="flex: 1 1 200px;"><img alt="${d.title}" src="${d.image}" style="width: 100%; height: auto; border-radius: .4rem;"></div>
+                  <div style="flex: 2 1 300px;">${summaryHTML}${bulletsHTML}${mediaHTML}${extended}</div>
+              </div>`;
+      } else {
+          fullContentHTML = `<div style="text-align: left;">${summaryHTML}${bulletsHTML}${mediaHTML}${extended}</div>`;
+      }
+
+      // Return a list item that contains both the button and its hidden content panel.
+      return `
+        <li class="deep-item" style="flex-direction: column; gap: 0;">
+          <button type="button" class="profile-btn" onclick="toggleProfile('${contentId}')">${d.title}</button>
+          <div id="${contentId}" class="full" hidden style="width: min(520px, 90%); max-width: 100%; box-sizing: border-box; padding: 1.2rem; background: #1a1d29; border-radius: 0 0 .55rem .55rem;">
+            ${fullContentHTML}
+          </div>
+        </li>`;
     }).join('');
     return `<ul class="deep-list">${items}</ul>`;
   }
+  // --- NEW FUNCTION & MODIFIED FUNCTION END ---
   
   function pollHTML(check, slideId, isListeningPoll = false) {
     if (!check) return '';
@@ -834,6 +878,8 @@ function startApp() {
   window.go = go;
   window.toggleFull = toggleFull;
   window.openProfile = openProfile;
+  // --- ADDED toggleProfile TO WINDOW SCOPE ---
+  window.toggleProfile = toggleProfile;
   window.submitPollVote = submitPollVote;
   window.submitWord = submitWord;
   window.startOrAdvanceQuiz = startOrAdvanceQuiz;
