@@ -189,7 +189,6 @@
   const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
   const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-  // FIXED: Changed the invalid version 11.6.1 to a stable version 10.12.2 to fix the 404 error.
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import { getFirestore, collection, addDoc, query, onSnapshot, doc, setDoc, getDoc, updateDoc, increment, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -248,7 +247,7 @@
       {"q": "True or False: Lester Flatt invented the G run.", "choices": ["True", "False"], "answer": 0}
   ];
   const EXTRA = {
-    'Lester Flatt (1914-1979)': [], 'Bill Monroe (11911-1996)': [], 'Earl Scruggs (1924-2012)': [],
+    'Lester Flatt (1914-1979)': [], 'Bill Monroe (1911-1996)': [], 'Earl Scruggs (1924-2012)': [],
     'Gid Tanner & the Skillet Lickers': [], 'Blue Moon of Kentucky': [], 'Foggy Mountain Breakdown': [],
     'Lester Flatt G Run': [], 'Ralph Stanley': [], 'Overview Video': []
   };
@@ -364,12 +363,17 @@ function startApp() {
 }
 
   // --- INTERACTIVE FEATURES ---
+  // MODIFIED: Added debugging logs and error handling to the listener
   function setupNavigationListener() {
+    console.log("[Listener Setup] Attaching navigation listener...");
     const stateRef = doc(db, `${sessionDataPath}/state`);
     onSnapshot(stateRef, (docSnap) => {
         const slideState = docSnap.exists() ? docSnap.data() : { currentSlide: 0 };
-        const newIndex = slideState.currentSlide || 0;
-        show(newIndex); 
+        const newIndex = slideState.currentSlide ?? 0; // Use nullish coalescing for safety
+        console.log(`[Listener Fired] Detected state change. Displaying slide: ${newIndex}`);
+        show(newIndex);
+    }, (error) => {
+        console.error("[Listener Error] Navigation listener failed:", error);
     });
   }
 
@@ -869,13 +873,24 @@ function startApp() {
     window.scrollTo(0,0); 
   }
 
+  // MODIFIED: Added debugging logs and error handling
   async function go(i){ 
     if (!isPresenter) return; 
-    const totalSlides = SLIDES.length + 1;
-    if (i < 0 || i >= totalSlides) return;
+    console.log(`[Presenter Action] Attempting to navigate to slide: ${i}`);
     
-    const stateRef = doc(db, `${sessionDataPath}/state`);
-    await setDoc(stateRef, { currentSlide: i }, { merge: true });
+    const totalSlides = SLIDES.length + 1;
+    if (i < 0 || i >= totalSlides) {
+        console.error(`Navigation cancelled: Index ${i} is out of bounds.`);
+        return;
+    }
+    
+    try {
+        const stateRef = doc(db, `${sessionDataPath}/state`);
+        await setDoc(stateRef, { currentSlide: i }, { merge: true });
+        console.log(`[Firebase Write] Successfully updated currentSlide to ${i}.`);
+    } catch (error) {
+        console.error("[Firebase Write Error] Failed to update slide state:", error);
+    }
   }
 
   function toggleFull(i){ const el=document.getElementById('full-'+i); if(el) el.hidden=!el.hidden; }
