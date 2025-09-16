@@ -256,7 +256,7 @@
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         userId = user.uid;
-        console.log("Firebase Authenticated. User ID:", userId);
+        // console.log("Firebase Authenticated. User ID:", userId);
         checkSessionState();
     } else {
         try {
@@ -363,14 +363,13 @@ function startApp() {
 }
 
   // --- INTERACTIVE FEATURES ---
-  // MODIFIED: Added debugging logs and error handling to the listener
   function setupNavigationListener() {
-    console.log("[Listener Setup] Attaching navigation listener...");
-    const stateRef = doc(db, `${sessionDataPath}/state`);
+    // FIXED: The path to a document must have an even number of segments.
+    // Added a collection 'sessionState' to make the path valid.
+    const stateRef = doc(db, `${sessionDataPath}/sessionState/state`);
     onSnapshot(stateRef, (docSnap) => {
         const slideState = docSnap.exists() ? docSnap.data() : { currentSlide: 0 };
-        const newIndex = slideState.currentSlide ?? 0; // Use nullish coalescing for safety
-        console.log(`[Listener Fired] Detected state change. Displaying slide: ${newIndex}`);
+        const newIndex = slideState.currentSlide ?? 0;
         show(newIndex);
     }, (error) => {
         console.error("[Listener Error] Navigation listener failed:", error);
@@ -873,21 +872,17 @@ function startApp() {
     window.scrollTo(0,0); 
   }
 
-  // MODIFIED: Added debugging logs and error handling
   async function go(i){ 
-    if (!isPresenter) return; 
-    console.log(`[Presenter Action] Attempting to navigate to slide: ${i}`);
+    if (!isPresenter) return;
     
     const totalSlides = SLIDES.length + 1;
-    if (i < 0 || i >= totalSlides) {
-        console.error(`Navigation cancelled: Index ${i} is out of bounds.`);
-        return;
-    }
+    if (i < 0 || i >= totalSlides) return;
     
     try {
-        const stateRef = doc(db, `${sessionDataPath}/state`);
+        // FIXED: The path to a document must have an even number of segments.
+        // Added a collection 'sessionState' to make the path valid.
+        const stateRef = doc(db, `${sessionDataPath}/sessionState/state`);
         await setDoc(stateRef, { currentSlide: i }, { merge: true });
-        console.log(`[Firebase Write] Successfully updated currentSlide to ${i}.`);
     } catch (error) {
         console.error("[Firebase Write Error] Failed to update slide state:", error);
     }
