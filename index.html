@@ -189,9 +189,10 @@
   const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
   const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, collection, addDoc, query, onSnapshot, doc, setDoc, getDoc, updateDoc, increment, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  // FIXED: Changed the invalid version 11.6.1 to a stable version 10.12.2 to fix the 404 error.
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, query, onSnapshot, doc, setDoc, getDoc, updateDoc, increment, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
@@ -247,7 +248,7 @@
       {"q": "True or False: Lester Flatt invented the G run.", "choices": ["True", "False"], "answer": 0}
   ];
   const EXTRA = {
-    'Lester Flatt (1914-1979)': [], 'Bill Monroe (1911-1996)': [], 'Earl Scruggs (1924-2012)': [],
+    'Lester Flatt (1914-1979)': [], 'Bill Monroe (11911-1996)': [], 'Earl Scruggs (1924-2012)': [],
     'Gid Tanner & the Skillet Lickers': [], 'Blue Moon of Kentucky': [], 'Foggy Mountain Breakdown': [],
     'Lester Flatt G Run': [], 'Ralph Stanley': [], 'Overview Video': []
   };
@@ -269,7 +270,6 @@
   function initializeInteractiveFeatures(){
     if(!sessionId) return;
     sessionDataPath = `/artifacts/${appId}/public/data/sessions/${sessionId}`;
-    // NEW: Added listener for synced navigation
     setupNavigationListener();
     setupQuizBattleListener();
     setupPollListeners();
@@ -354,7 +354,6 @@ function startApp() {
         return;
     }
     
-    // MODIFIED: Content is now rendered after the app starts and we know the user's role.
     render();
 
     document.getElementById('session-overlay').classList.add('hidden');
@@ -365,14 +364,12 @@ function startApp() {
 }
 
   // --- INTERACTIVE FEATURES ---
-
-  // NEW: Listener for synced slide navigation
   function setupNavigationListener() {
     const stateRef = doc(db, `${sessionDataPath}/state`);
     onSnapshot(stateRef, (docSnap) => {
         const slideState = docSnap.exists() ? docSnap.data() : { currentSlide: 0 };
         const newIndex = slideState.currentSlide || 0;
-        show(newIndex); // This updates the UI for everyone in the session.
+        show(newIndex); 
     });
   }
 
@@ -655,4 +652,309 @@ function startApp() {
 
   function deepListHTML(sectionIdx, deep){
     if(!deep || !deep.length) return '';
-    const items
+    const items = deep.map((d,di)=>{
+      if (d.modalHTML && !d.bullets?.length) {
+         const label = `Open content: ${d.title}`;
+         return `<li class="deep-item"><button type="button" class="profile-btn" aria-label="${label}" onclick="openProfile(${sectionIdx},${di})">${d.title}</button></li>`;
+      }
+
+      const contentId = `profile-content-${sectionIdx}-${di}`;
+      
+      const baseBullets = (d.bullets||[]).map(b=>`<li>${b}</li>`).join('');
+      const media = (d.media||[]).map(m=>`<li><a href="${m.href}" target="_blank" rel="noopener">${m.label}</a></li>`).join('');
+      const extended = d.modalHTML || '';
+      const summaryHTML = d.summary?`<p>${d.summary}</p>`:'';
+      const bulletsHTML = baseBullets?`<h4>Key points</h4><ul>${baseBullets}</ul>`:'';
+      const mediaHTML = media?`<h4>Media</h4><ul class="media">${media}</ul>`:'';
+      
+      let fullContentHTML = '';
+      if (d.image) {
+          fullContentHTML = `
+              <div style="text-align: left;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; margin-bottom: 1rem;">
+                      <div style="flex: 1 1 200px;">
+                          <img alt="${d.title}" src="${d.image}" style="width: 100%; height: auto; border-radius: .4rem;">
+                      </div>
+                      <div style="flex: 2 1 300px;">
+                          ${bulletsHTML}
+                      </div>
+                  </div>
+                  <div>
+                      ${summaryHTML}${mediaHTML}${extended}
+                  </div>
+              </div>`;
+      } else {
+          fullContentHTML = `<div style="text-align: left;">${summaryHTML}${bulletsHTML}${mediaHTML}${extended}</div>`;
+      }
+
+      return `
+        <li class="deep-item" style="flex-direction: column; gap: 0;">
+          <button type="button" class="profile-btn" onclick="toggleProfile('${contentId}')">${d.title}</button>
+          <div id="${contentId}" class="full" hidden style="width: min(520px, 90%); max-width: 100%; box-sizing: border-box; padding: 1.2rem; background: #1a1d29; border-radius: 0 0 .55rem .55rem;">
+            ${fullContentHTML}
+          </div>
+        </li>`;
+    }).join('');
+    return `<ul class="deep-list">${items}</ul>`;
+  }
+  
+  function pollHTML(check, slideId, isListeningPoll = false) {
+    if (!check) return '';
+    const pollId = `poll-${slideId}`;
+    const choices = check.choices.map((opt, ci) => `
+        <div class="poll-option">
+            <div class="poll-bar"></div>
+            <span class="poll-percent">0%</span>
+            <button onclick="submitPollVote('${pollId}', ${ci})">${opt}</button>
+        </div>
+    `).join('');
+    let clipsHTML = '';
+    if (isListeningPoll && check.clips) {
+      clipsHTML = check.clips.map(clip => `<button class="read-btn" style="margin-right: .5rem;">▶️ ${clip}</button>`).join('');
+    }
+    return `
+        <div class="poll interactive-section" data-poll-id="${pollId}">
+            <h3>${isListeningPoll ? 'Identify the Technique' : 'Test Your Knowledge'}</h3>
+            <p>${check.q}</p>
+            ${isListeningPoll ? `<div style="margin-bottom:1rem">${clipsHTML}</div>` : ''}
+            <div class="choices">${choices}</div>
+        </div>
+    `;
+  }
+
+  function buildABandHTML(data) {
+    if (!data) return '';
+    const instruments = [...data.correct, ...data.distractors].sort(() => Math.random() - 0.5);
+    const instrumentHTML = instruments.map(inst => `<div class="instrument" draggable="true" data-instrument="${inst}">${inst}</div>`).join('');
+    return `
+        <div class="interactive-section build-a-band-container">
+            <h3>Build a String Band</h3>
+            <p>Drag the correct instruments into the band area.</p>
+            <div class="build-a-band">
+                <div class="instrument-pool"><h4>Instruments</h4>${instrumentHTML}</div>
+                <div class="band-area" data-correct='${JSON.stringify(data.correct)}'><h4>Band Area</h4></div>
+            </div>
+        </div>
+    `;
+  }
+
+  function wordCloudHTML() {
+    return `
+        <div class="interactive-section word-cloud-container">
+            <div class="word-cloud-input">
+                <h3>Final Thoughts?</h3>
+                <p>What one word describes Bluegrass to you? Add it to our word cloud!</p>
+                <div class="content-input-container">
+                    <input type="text" id="word-cloud-input" class="content-input" placeholder="e.g., Fast, Twangy, etc.">
+                    <button class="add-content-btn" onclick="submitWord()">Submit</button>
+                </div>
+            </div>
+            <div id="word-cloud-display" class="word-cloud-display"></div>
+        </div>
+    `;
+  }
+
+  function render(){
+    const host = document.getElementById('slides');
+    if (!host) return;
+    host.innerHTML = ''; 
+    const total = SLIDES.length + 1;
+
+    SLIDES.forEach((s,idx)=>{
+      const bullets = s.bullets.map(b=>`<li>${b}</li>`).join('');
+      const deep = deepListHTML(idx, s.deep);
+      const poll = pollHTML(s.poll, s.id);
+      const listeningPoll = pollHTML(s.listening_poll, s.id + '-listen', true);
+      const buildaband = buildABandHTML(s.buildaband);
+      const wordcloud = s.wordcloud ? wordCloudHTML() : '';
+      
+      let footerHTML = '';
+      if (isPresenter) {
+          const prevBtn = idx > 0 ? `<button class="nav-btn" onclick="go(${idx-1})">◀ Previous</button>` : '<span></span>';
+          const nextBtn = (idx < SLIDES.length) ? `<button class="nav-btn" onclick="go(${idx+1})">Next ▶</button>` : '<span></span>';
+          footerHTML = `<footer class="slide-nav">${prevBtn}<button class="home-btn" onclick="go(0)">Home</button>${nextBtn}</footer>`;
+      }
+      
+      host.insertAdjacentHTML('beforeend', `
+        <section class="slide" id="slide-${idx}" data-ix="${idx}" aria-labelledby="h-${s.id}">
+          <header class="slide-head"><h2 id="h-${s.id}">${s.title}</h2><div class="meter">Slide ${idx+1} of ${total}</div></header>
+          <ul class="bullets">${bullets}</ul>
+          <button class="read-btn" onclick="toggleFull(${idx})">Read Full Text</button>
+          <article id="full-${idx}" class="full" hidden><p>${s.full}</p></article>
+          ${deep}
+          ${poll}
+          ${listeningPoll}
+          ${buildaband}
+          ${wordcloud}
+          ${footerHTML}
+        </section>
+      `);
+    });
+
+    const qIndex = SLIDES.length;
+    let quizFooterHTML = '';
+    if (isPresenter) {
+        quizFooterHTML = `<footer class="slide-nav"><button class="nav-btn" onclick="go(${qIndex-1})">◀ Previous</button><button class="home-btn" onclick="go(0)">Home</button><span></span></footer>`;
+    }
+
+    host.insertAdjacentHTML('beforeend', `
+      <section class="slide" id="slide-${qIndex}" data-ix="${qIndex}" aria-labelledby="h-quiz">
+        <header class="slide-head"><h2 id="h-quiz">Lesson 17: Quiz Battle</h2><div class="meter">Slide ${qIndex + 1} of ${qIndex + 1}</div></header>
+        <div class="quiz-battle-container">
+          <div class="quiz-main">
+            <div id="quiz-timer">1000 points</div>
+            <div id="quiz-question-area"><p>Loading Quiz Battle...</p></div>
+            <div id="quiz-feedback"></div>
+            <div id="quiz-controls"></div>
+          </div>
+          <div class="leaderboard">
+            <h3>Leaderboard</h3>
+            <ul id="leaderboard-list">
+              <li>Loading...</li>
+            </ul>
+          </div>
+        </div>
+        ${quizFooterHTML}
+      </section>
+    `);
+    setupDragAndDrop();
+  }
+
+  let lastFocused = null;
+  function openProfile(sectionIdx, cardIdx){
+    const d = SLIDES[sectionIdx].deep[cardIdx];
+    const modal = document.getElementById('modal');
+    const mBody = document.getElementById('m-body');
+    const scrim = document.getElementById('scrim');
+    const title = d.modalTitle || d.title;
+    const baseBullets = (d.bullets||[]).map(b=>`<li>${b}</li>`).join('');
+    const media = (d.media||[]).map(m=>`<li><a href="${m.href}" target="_blank" rel="noopener">${m.label}</a></li>`).join('');
+    const extended = d.modalHTML || '';
+    const extra = EXTRA[d.title] || [];
+    const extraHTML = extra.length ? `<h4>Additional notes</h4><ul>${extra.map(x=>`<li>${x}</li>`).join('')}</ul>` : '';
+    const summaryHTML = d.summary?`<p>${d.summary}</p>`:'';
+    const bulletsHTML = baseBullets?`<h4>Key points</h4><ul>${baseBullets}</ul>`:'';
+    const mediaHTML = media?`<h4>Media</h4><ul class="media">${media}</ul>`:'';
+    document.getElementById('m-title').textContent = title;
+    if (d.image) {
+        mBody.className = 'modal-body split-layout';
+        mBody.innerHTML = `<div class="modal-image-container"><img alt="${d.title}" src="${d.image}"></div><div class="modal-text-container">${summaryHTML}${bulletsHTML}${extraHTML}${mediaHTML}${extended}</div>`;
+    } else {
+        mBody.className = 'modal-body';
+        mBody.innerHTML = `${summaryHTML}${bulletsHTML}${extraHTML}${mediaHTML}${extended}`;
+    }
+    lastFocused = document.activeElement;
+    document.body.classList.add('modal-open');
+    scrim.classList.add('active');
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden','false');
+    document.getElementById('modalClose').focus();
+  }
+  function hideModal(){
+    const modal = document.getElementById('modal');
+    const scrim = document.getElementById('scrim');
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden','true');
+    scrim.classList.remove('active');
+    document.body.classList.remove('modal-open');
+    if(lastFocused) lastFocused.focus();
+  }
+ 
+  function show(i){ 
+    if(!slidesEls) slidesEls = document.getElementsByClassName('slide'); 
+    if(i<0||i>=slidesEls.length) return; 
+    Array.from(slidesEls).forEach(s=>s.style.display='none'); 
+    slidesEls[i].style.display='block'; 
+    ix=i; 
+    window.scrollTo(0,0); 
+  }
+
+  async function go(i){ 
+    if (!isPresenter) return; 
+    const totalSlides = SLIDES.length + 1;
+    if (i < 0 || i >= totalSlides) return;
+    
+    const stateRef = doc(db, `${sessionDataPath}/state`);
+    await setDoc(stateRef, { currentSlide: i }, { merge: true });
+  }
+
+  function toggleFull(i){ const el=document.getElementById('full-'+i); if(el) el.hidden=!el.hidden; }
+  
+  function setupDragAndDrop() {
+    const instruments = document.querySelectorAll('.instrument');
+    const dropzone = document.querySelector('.band-area');
+
+    instruments.forEach(inst => {
+        inst.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', e.target.dataset.instrument));
+    });
+    if (!dropzone) return;
+    const correctInstruments = JSON.parse(dropzone.dataset.correct);
+
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+    dropzone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        const instrumentName = e.dataTransfer.getData('text/plain');
+        const instrumentEl = document.querySelector(`[data-instrument="${instrumentName}"]`);
+        if (instrumentEl && !dropzone.contains(instrumentEl)) {
+            dropzone.appendChild(instrumentEl);
+            if (correctInstruments.includes(instrumentName)) {
+                instrumentEl.classList.add('correct');
+            } else {
+                instrumentEl.classList.add('incorrect');
+            }
+        }
+    });
+  }
+  
+  function toggleQnaPanel() {
+    const nameOverlay = document.getElementById('name-entry-overlay');
+    if(document.getElementById('session-overlay').classList.contains('hidden') && nameOverlay.classList.contains('hidden')){
+      document.getElementById('qna-panel').classList.toggle('active');
+      document.getElementById('scrim').classList.toggle('active');
+    }
+  }
+
+  // --- GLOBAL EVENT LISTENERS ---
+  document.getElementById('modalClose').addEventListener('click', hideModal);
+  document.getElementById('scrim').addEventListener('click', ()=>{
+      hideModal();
+      if(document.getElementById('qna-panel').classList.contains('active')){
+          toggleQnaPanel();
+      }
+  });
+  document.addEventListener('keydown', (e)=>{ 
+    if(e.key==='Escape') {
+        hideModal();
+        if(document.getElementById('qna-panel').classList.contains('active')){
+          toggleQnaPanel();
+        }
+    }
+    else if(e.key==='ArrowRight') go(ix+1); 
+    else if(e.key==='ArrowLeft') go(ix-1); 
+    else if(e.key==='Home') go(0); 
+    else if(e.key==='End') go(document.getElementsByClassName('slide').length-1); 
+  });
+
+  document.addEventListener('DOMContentLoaded', ()=>{ 
+    initializeUserSession();
+  });
+  
+  // --- WINDOW-SCOPED FUNCTIONS FOR HTML ---
+  window.go = go;
+  window.toggleFull = toggleFull;
+  window.openProfile = openProfile;
+  window.toggleProfile = toggleProfile;
+  window.submitPollVote = submitPollVote;
+  window.submitWord = submitWord;
+  window.startOrAdvanceQuiz = startOrAdvanceQuiz;
+  window.submitQuizAnswer = submitQuizAnswer;
+  window.toggleQnaPanel = toggleQnaPanel;
+  window.submitQuestion = submitQuestion;
+  window.upvoteQuestion = upvoteQuestion;
+  
+</script>
+
+</body>
+</html>
