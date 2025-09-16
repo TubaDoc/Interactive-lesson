@@ -177,7 +177,16 @@
 
 <script type="module">
   // --- IMPORTS AND CONFIG ---
-  const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "...", authDomain: "...", projectId: "..." };
+  // UPDATED CONFIG: Replaced placeholders with your provided Firebase configuration.
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxpDj0axohHIFfRQ53NLWBQbf_yI2lJo0",
+    authDomain: "interactive-lecture-app.firebaseapp.com",
+    projectId: "interactive-lecture-app",
+    storageBucket: "interactive-lecture-app.firebasestorage.app",
+    messagingSenderId: "47230608512",
+    appId: "1:47230608512:web:ba649a4a9ba16cef1df265",
+    measurementId: "G-NDLP7MWFH9"
+  };
   const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
   const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
@@ -211,7 +220,7 @@
       {"title": "Bill Monroe (1911-1996)", "summary": "Known as 'the father of bluegrass music,' Monroe was a singer and mandolinist from rural Kentucky.", "bullets": ["Learned guitar and mandolin as a child.", "Formed the Blue Grass Boys in 1938.", "His unique style was copied by other groups, who dubbed the genre 'bluegrass.'", "Nearly every significant early bluegrass musician was a member of his band or was influenced by them."], "media": [{"label": "Watch: 'New Mule Skinner Blues'", "href": "https://www.youtube.com/embed/tiRu03RgSWw"}, {"label": "Listen: 'New Mule Skinner Blues'", "href":"https://open.spotify.com/track/3CIoKguwyGbZlcvc4KtlC6?si=b8cd7bfda32b4b97"}], "image": "https://i.imgur.com/q9IVztb.png", "modalTitle": "About Bill Monroe", "modalHTML": "<p>Known as “the father of bluegrass music,” Bill Monroe was born in rural Kentucky in 1911. He came from a musical family: his father was a step-dancer, his mother played the fiddle and sang, and his four siblings all played instruments. He learned guitar and mandolin as a child, and by the age of 12 he began to perform with his uncle Pen Vandiver, an accomplished fiddler, at country barn dances. Bill and two of his brothers moved to East Chicago, Indiana in 1929, where Bill worked at the Sinclair refiner for four years during the Great Depression. In 1932, he began playing barn dances and local radio shows with his brothers, and in 1938 Bill formed the group the Blue Grass Boys. By 1945, the Blue Grass Boys lineup had solidified with Monroe on mandolin, Lester Flatt on guitar, Earl Scruggs on banjo, Chubby Wise on fiddle, and Howard Watts on bass. Their unique style began to be copied by other groups during the late 1940s and 1950s and was dubbed bluegrass. Monroe’s legacy and influence cannot be understated, as nearly every significant early-generation bluegrass musician was either a member of the Blue Grass Boys, played in a group fronted by a former Blue Grass Boy, or in a group that emulated them.</p><p><em>\"I'm a farmer with a mandolin and a high tenor voice.\" -Bill Monroe</em></p>"}
     ], "poll": {"q": "Which of these instruments is NOT typically found in a traditional string band?", "choices": ["Guitar", "Fiddle", "Harmonica", "Mandolin"], "answer": 2}},
     {"id": "17.04", "title": "17.04 The Classic Bluegrass Sound", "bullets": ["Earl Scruggs perfected and popularized the 'three-finger' banjo style.", "The quintessential Blue Grass Boys lineup existed from 1945-1948.", "This band featured Monroe (mandolin), Flatt (guitar), Scruggs (banjo), Chubby Wise (fiddle), and Howard Watts/Cedric Rainwater (bass).", "Monroe's original song 'Blue Moon of Kentucky' (1946) became a huge hit."], "full": "Earl Scruggs, born in 1924 in North Carolina, grew up in a family of banjo players. His family played in a special 'three-finger' style... the banjo player has picks on the thumb, index, and middle fingers... The melodies are mixed with harmony and accompaniment, and the banjoist usually delivers the notes very quickly. At this time, the members were Scruggs on banjo, Lester Flatt on guitar, Robert 'Chubby' Wise on fiddle, Cedric Rainwater on bass, and leader Bill Monroe on mandolin. This version of Bill Monroe’s Blue Grass Boys that existed between 1945 and 1948 is generally regarded as the quintessential bluegrass band... The band also recorded 'Blue Moon of Kentucky' in 1946, which was an original composition by Monroe.", "deep": [
-      {"title": "Earl Scruggs (1924-2012)", "summary": "The most influential banjo player in American music, who perfected the three-finger banjo technique.", "bullets": ["Joined the Blue Grass Boys in 1944.", "His style is now often called 'Scruggs style.'", "Co-founded the Foggy Mountain Boys with Lester Flatt.", "Inducted into the Country Music Hall of Fame in 1985."], "media": [{"label": "Watch: Three-Finger Style Explained", "href": "https://www.youtube.com/embed/I4sLuLhW1B8"}], "image": "https://i.imgur.com/d3tauxz.png", "modalTitle": "About Earl Scruggs", "modalHTML": "<p>Earl Scruggs was most influential banjo player not only in bluegrass but in all of American music. Born in rural North Carolina, his father died at the age of four. To help him cope with his father’s passing, Scruggs began to play the banjo. While most players used a two-finger style, Scruggs was the first to perfect and popularize the three-finger banjo technique. He joined Bill Monroe’s Blue Grass Boys in 1944 and formed the Foggy Mountain boys with Lester Flatt in 1948. Together Scruggs and Flatt recorded “Foggy Mountain Breakdown” (1949), which was featured in the film Bonnie and Clyde (1967), and “The Ballad of Jed Clampett” (1962), which was used as the theme for the television show The Beverly Hillbillies. Lester and Scruggs parted ways in 1969, and Scruggs formed the Earl Scruggs Review with his three sons. In an attempt to achieve a more modern style, Scruggs began the electric banjo. Earl Scruggs was inducted into the Country Music Hall of Fame in 1985 and received a star on the Hollywood Walk of Fame in 2003.</p>"},
+      {"title": "Earl Scruggs (1924-2012)", "summary": "The most influential banjo player in American music, who perfected the three-finger banjo technique.", "bullets": ["Joined the Blue Grass Boys in 1944.", "His style is now often called 'Scruggs style.'", "Co-founded the Foggy Mountain Boys with Lester Flatt.", "Inducted into the Country Music Hall of Fame in 1985."], "media": [{"label": "Watch: Three-Finger Style Explained", "href": "https://www.youtube.com/embed/I4sLuLhW1B8"}], "image": "https://i.imgur.com/d3tauxz.png", "modalTitle": "About Earl Scruggs", "modalHTML": "<p>Earl Scruggs was most influential banjo player not only in bluegrass but in all of American music. Born in rural North Carolina, his father died at the age of four. To help him cope with his father’s passing, Scruggs began to play the banjo. While most players used a two-finger style, Scruggs was the first to perfect and popularize the three-finger banjo technique. He joined Bill Monroe’s Bluegrass Boys in 1944 and formed the Foggy Mountain boys with Lester Flatt in 1948. Together Scruggs and Flatt recorded “Foggy Mountain Breakdown” (1949), which was featured in the film Bonnie and Clyde (1967), and “The Ballad of Jed Clampett” (1962), which was used as the theme for the television show The Beverly Hillbillies. Lester and Scruggs parted ways in 1969, and Scruggs formed the Earl Scruggs Review with his three sons. In an attempt to achieve a more modern style, Scruggs began the electric banjo. Earl Scruggs was inducted into the Country Music Hall of Fame in 1985 and received a star on the Hollywood Walk of Fame in 2003.</p>"},
       {"title": "Blue Moon of Kentucky", "summary": "Listen to Monroe's hit waltz from 1946, later covered by Elvis Presley.", "bullets": [], "media": [{"label": "Listen on Spotify", "href": "https://open.spotify.com/track/3x95FfMhVfB3ZNIufQ1IF3"}, {"label": "Watch a Live Version", "href": "https://www.youtube.com/embed/4syA9aNnNa0"}, {"label": "More Info", "href": "https://www.netstate.com/states/symb/song/ky_blue_moon_of_ky.htm"}], "image": null, "modalTitle": "About 'Blue Moon of Kentucky'", "modalHTML": ""},
       {"title": "Featured Recordings (1946)", "summary": "Listen to classic recordings from the quintessential Blue Grass Boys lineup.", "bullets":[],"media":[{"label":"'Will You Be Loving Another Man?'","href":"https://open.spotify.com/track/7HU6nRWKVIzQ7lRLATZWxW?si=31d54903851c4b54"},{"label":"'Blue Yodel No. 4'","href":"https://open.spotify.com/track/2EAICjiavkemcnaSQqCtn0?si=714bc2a161474db8"}]}
     ], "poll": {"q": "Earl Scruggs's famous banjo-playing style uses how many fingers?", "choices": ["2", "3", "4", "5"], "answer": 1}},
@@ -281,7 +290,7 @@
     
     startBtn.addEventListener('click', () => {
         const newSessionId = Math.floor(100000 + Math.random() * 900000).toString();
-        const currentUrl = new URL(window.location.href);
+        const currentUrl = new URL(window.location.origin + window.location.pathname);
         currentUrl.searchParams.set('session', newSessionId);
         window.location.href = currentUrl.href;
     });
@@ -290,7 +299,7 @@
         const sessionInput = document.getElementById('session-input');
         const inputId = sessionInput.value.trim();
         if (inputId) {
-            const currentUrl = new URL(window.location.href);
+            const currentUrl = new URL(window.location.origin + window.location.pathname);
             currentUrl.searchParams.set('session', inputId);
             window.location.href = currentUrl.href;
         }
@@ -579,7 +588,7 @@ function startApp() {
       const question = BATTLE_QUIZ[qIndex], isCorrect = question.answer === choiceIndex;
       showAnswerFeedback(qIndex, choiceIndex);
       if (isCorrect) {
-          const elapsedSeconds = (new Date().getTime() - startTime) / 1000;
+          const elapsedSeconds = (new Date().getTime() - questionStartTime) / 1000;
           let points = (elapsedSeconds < 15) ? Math.round(1000 * (1 - (elapsedSeconds / 15))) : 0;
           const scoreRef = doc(db, `${sessionDataPath}/quiz/scores/${userId}`);
           await setDoc(scoreRef, { correctAnswers: increment(1), timePoints: increment(points) }, { merge: true });
@@ -833,9 +842,7 @@ function startApp() {
   window.submitQuestion = submitQuestion;
   window.upvoteQuestion = upvoteQuestion;
   
-
 </script>
 
 </body>
 </html>
-
