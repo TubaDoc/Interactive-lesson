@@ -364,8 +364,6 @@ function startApp() {
 
   // --- INTERACTIVE FEATURES ---
   function setupNavigationListener() {
-    // FIXED: The path to a document must have an even number of segments.
-    // Added a collection 'sessionState' to make the path valid.
     const stateRef = doc(db, `${sessionDataPath}/sessionState/state`);
     onSnapshot(stateRef, (docSnap) => {
         const slideState = docSnap.exists() ? docSnap.data() : { currentSlide: 0 };
@@ -422,7 +420,8 @@ function startApp() {
   
   // Word Cloud
   function setupWordCloudListener() {
-    const wordsRef = collection(db, `${sessionDataPath}/wordcloud/words`);
+    // FIXED: Corrected Firestore path
+    const wordsRef = collection(db, `${sessionDataPath}/wordcloud`);
     onSnapshot(query(wordsRef), (snapshot) => {
         const words = {};
         snapshot.forEach(doc => {
@@ -454,14 +453,16 @@ function startApp() {
     const input = document.getElementById('word-cloud-input');
     const text = input.value.trim();
     if (text && userId) {
-        await addDoc(collection(db, `${sessionDataPath}/wordcloud/words`), { text, author: userId });
+        // FIXED: Corrected Firestore path
+        await addDoc(collection(db, `${sessionDataPath}/wordcloud`), { text, author: userId });
         input.value = '';
     }
   };
 
   // Q&A
   function setupQnaListener() {
-    const qnaRef = collection(db, `${sessionDataPath}/qna/questions`);
+    // FIXED: Corrected Firestore path
+    const qnaRef = collection(db, `${sessionDataPath}/qna`);
     onSnapshot(query(qnaRef), (snapshot) => {
         const questions = [];
         snapshot.forEach(doc => questions.push({ id: doc.id, ...doc.data() }));
@@ -495,7 +496,8 @@ function startApp() {
     const input = document.getElementById('qna-input');
     const text = input.value.trim();
     if (text && userId) {
-        await addDoc(collection(db, `${sessionDataPath}/qna/questions`), { text, author: userId, upvotes: 0, name: userName || 'Anonymous' });
+        // FIXED: Corrected Firestore path
+        await addDoc(collection(db, `${sessionDataPath}/qna`), { text, author: userId, upvotes: 0, name: userName || 'Anonymous' });
         input.value = '';
     }
   };
@@ -503,7 +505,8 @@ function startApp() {
   async function upvoteQuestion(questionId) {
     if (localUpvotes.has(questionId)) return;
     localUpvotes.add(questionId);
-    const qRef = doc(db, `${sessionDataPath}/qna/questions/${questionId}`);
+    // FIXED: Corrected Firestore path
+    const qRef = doc(db, `${sessionDataPath}/qna/${questionId}`);
     await updateDoc(qRef, { upvotes: increment(1) });
   };
   
@@ -513,12 +516,14 @@ function startApp() {
   let timerInterval = null;
 
   async function setupQuizBattleListener() {
-    const battleStateRef = doc(db, `${sessionDataPath}/quiz/battle`);
+    // FIXED: Corrected Firestore path
+    const battleStateRef = doc(db, `${sessionDataPath}/quizState/battle`);
     onSnapshot(battleStateRef, (docSnap) => {
       const state = docSnap.exists() ? docSnap.data() : { status: 'waiting', currentQuestion: -1 };
       renderQuizState(state);
     });
-    const scoresRef = collection(db, `${sessionDataPath}/quiz/scores`);
+    // FIXED: Corrected Firestore path
+    const scoresRef = collection(db, `${sessionDataPath}/scores`);
     onSnapshot(query(scoresRef), (snapshot) => {
       const scores = [];
       snapshot.forEach(doc => scores.push({ id: doc.id, ...doc.data() }));
@@ -600,14 +605,16 @@ function startApp() {
   async function startOrAdvanceQuiz() {
     if (!isPresenter || !userId || !userName) return;
 
-    const battleStateRef = doc(db, `${sessionDataPath}/quiz/battle`);
+    // FIXED: Corrected Firestore path
+    const battleStateRef = doc(db, `${sessionDataPath}/quizState/battle`);
     const docSnap = await getDoc(battleStateRef);
     const currentState = docSnap.exists() ? docSnap.data() : { status: 'waiting', currentQuestion: -1 };
     let nextQuestion = currentState.currentQuestion + 1;
 
     if (currentState.status === 'finished' || currentState.status === 'waiting') {
         localAnswers = {};
-        const scoresRef = doc(db, `${sessionDataPath}/quiz/scores/${userId}`);
+        // FIXED: Corrected Firestore path
+        const scoresRef = doc(db, `${sessionDataPath}/scores/${userId}`);
         await setDoc(scoresRef, { correctAnswers: 0, timePoints: 0, name: userName || 'Anonymous' });
         nextQuestion = 0;
     }
@@ -628,7 +635,8 @@ function startApp() {
       if (isCorrect) {
           const elapsedSeconds = (new Date().getTime() - questionStartTime) / 1000;
           let points = (elapsedSeconds < 15) ? Math.round(1000 * (1 - (elapsedSeconds / 15))) : 0;
-          const scoreRef = doc(db, `${sessionDataPath}/quiz/scores/${userId}`);
+          // FIXED: Corrected Firestore path
+          const scoreRef = doc(db, `${sessionDataPath}/scores/${userId}`);
           await setDoc(scoreRef, { correctAnswers: increment(1), timePoints: increment(points) }, { merge: true });
       }
   };
@@ -879,8 +887,6 @@ function startApp() {
     if (i < 0 || i >= totalSlides) return;
     
     try {
-        // FIXED: The path to a document must have an even number of segments.
-        // Added a collection 'sessionState' to make the path valid.
         const stateRef = doc(db, `${sessionDataPath}/sessionState/state`);
         await setDoc(stateRef, { currentSlide: i }, { merge: true });
     } catch (error) {
